@@ -221,19 +221,26 @@ const App: React.FC = () => {
   const handleError = (err: any) => {
     setStep(GenerationStep.ERROR);
     const msg = err.message || "Có lỗi xảy ra.";
-    const isInvalidKey = msg.includes('không hợp lệ') || msg.includes('INVALID_ARGUMENT') || msg.includes('suspended') || msg.includes('đình chỉ') || msg.includes('PERMISSION_DENIED');
-    const isQuotaExhausted = msg.includes('hết quota') || msg.includes('RESOURCE_EXHAUSTED');
 
-    if (isInvalidKey || isQuotaExhausted) {
-      // Clear bad key and show modal
+    // Rate limit - key is VALID, just need to wait
+    const isRateLimit = msg.includes('rate limit') || msg.includes('tốc độ') || msg.includes('429') || msg.includes('Too Many');
+    // Key is broken - need new key
+    const isInvalidKey = msg.includes('không hợp lệ') || msg.includes('INVALID_ARGUMENT') || msg.includes('suspended') || msg.includes('đình chỉ') || msg.includes('PERMISSION_DENIED');
+    // Quota exceeded (daily/monthly limit)
+    const isQuotaExhausted = msg.includes('hết lượt') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('hết quota');
+
+    if (isRateLimit) {
+      // DON'T clear key - it's valid, just rate limited
+      setError('⏳ Quá giới hạn tốc độ gọi API (rate limit). Vui lòng chờ 30-60 giây rồi thử lại.\n💡 Free tier cho phép ~15 request/phút.');
+    } else if (isInvalidKey) {
+      // Key is bad - clear it
       localStorage.removeItem('gemini_api_key');
       setSettings(prev => ({ ...prev, apiKey: '' }));
       setCustomApiKey('');
       setShowApiKeyModal(true);
-      setError(isInvalidKey
-        ? '🔑 API Key không hợp lệ hoặc đã hết hạn. Vui lòng nhập key mới.\n👉 Lấy key miễn phí tại: aistudio.google.com/apikey'
-        : '⚡ API Key đã hết lượt dùng (quota). Vui lòng tạo key mới hoặc chờ reset.\n👉 Lấy key miễn phí tại: aistudio.google.com/apikey'
-      );
+      setError('🔑 API Key không hợp lệ hoặc đã bị đình chỉ. Vui lòng tạo key mới.\n👉 aistudio.google.com/apikey');
+    } else if (isQuotaExhausted) {
+      setError('⚡ Đã hết lượt dùng miễn phí trong ngày. Vui lòng chờ hoặc tạo key mới từ project khác.\n👉 aistudio.google.com/apikey');
     } else {
       setError(`⚠️ ${msg}`);
     }
