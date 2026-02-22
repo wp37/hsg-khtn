@@ -1,4 +1,4 @@
-// Authentication Utilities for SKKN Architect Pro
+// Authentication Utilities for HSG KHTN Hóa Học AI
 // Manages admin login and phone-based feature activation
 
 // Safe localStorage helpers (avoid SSR crashes)
@@ -46,14 +46,16 @@ export const BANK_INFO = {
   accountHolder: 'VO NGOC TUNG',
   amount: '100.000đ',
   // VietQR URL for QR code display
-  qrUrl: 'https://img.vietqr.io/image/agribank-7110215003073-compact2.png?amount=100000&addInfo=SKKN&accountName=VO%20NGOC%20TUNG',
+  qrUrl: 'https://img.vietqr.io/image/agribank-7110215003073-compact2.png?amount=100000&addInfo=HSG%20KHTN&accountName=VO%20NGOC%20TUNG',
 };
 
-// User Registration interface
+// User Registration interface (aligned with types.ts)
 export interface UserRegistration {
   phone: string;
   fullName: string;
   registeredAt: string;
+  timestamp?: number;
+  status?: 'pending' | 'activated' | 'rejected';
 }
 
 const STORAGE_KEYS = {
@@ -154,10 +156,11 @@ export const isUserActivated = (): boolean => {
 };
 
 /**
- * Check if user can access basic features (always true - free access)
+ * Check if user can access features
+ * Requires admin login OR activated registration
  */
 export const canAccessFeature = (): boolean => {
-  return true;
+  return isAdmin() || isUserActivated();
 };
 
 /**

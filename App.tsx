@@ -13,10 +13,6 @@ import {
   DIFFICULTY_LEVELS,
   EXAM_GRADES,
   SOLVER_SUGGESTIONS,
-  EVALUATION_PROMPT,
-  OUTLINE_PROMPT,
-  PART_1_PROMPT,
-  PART_2_3_PROMPT,
 } from './constants';
 import {
   validateAdminCredentials,
@@ -99,6 +95,15 @@ const App: React.FC = () => {
     apiKey: SYSTEM_API_KEY || '',
     customModel: ''
   });
+
+  // Load saved API key from localStorage on startup
+  useEffect(() => {
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey && savedKey.trim()) {
+      setSettings(prev => ({ ...prev, apiKey: savedKey.trim() }));
+      setCustomApiKey(savedKey.trim());
+    }
+  }, []);
 
   // Load phone lists when admin panel opens
   useEffect(() => {
@@ -224,6 +229,7 @@ const App: React.FC = () => {
   // === SOLVER LOGIC ===
   const handleSolve = useCallback(async () => {
     if (!problemInput.trim() && !solverFile) return;
+    if (!canAccessFeature() && !settings.apiKey) { setShowRegisterModal(true); return; }
     const activeKey = settings.apiKey || SYSTEM_API_KEY;
     if (!activeKey) { setShowApiKeyModal(true); setError("Vui lòng nhập API Key."); return; }
 
@@ -264,6 +270,7 @@ const App: React.FC = () => {
 
   // === EXAM CREATOR LOGIC ===
   const handleCreateExam = useCallback(async () => {
+    if (!canAccessFeature() && !settings.apiKey) { setShowRegisterModal(true); return; }
     const activeKey = settings.apiKey || SYSTEM_API_KEY;
     if (!activeKey) { setShowApiKeyModal(true); setError("Vui lòng nhập API Key."); return; }
 
@@ -297,6 +304,7 @@ const App: React.FC = () => {
   // === GRADER LOGIC ===
   const handleGrade = useCallback(async () => {
     if (!graderFile) return;
+    if (!canAccessFeature() && !settings.apiKey) { setShowRegisterModal(true); return; }
     const activeKey = settings.apiKey || SYSTEM_API_KEY;
     if (!activeKey) { setShowApiKeyModal(true); setError("Vui lòng nhập API Key."); return; }
 

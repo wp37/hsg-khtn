@@ -1,5 +1,8 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import { Download, Copy, Check, FileText, ArrowLeft, Beaker, GraduationCap, ClipboardCheck } from 'lucide-react';
 import { parse } from 'marked';
 import { AppMode, GenerationStep } from '../types';
@@ -14,6 +17,28 @@ interface ResultViewProps {
 
 const ResultView: React.FC<ResultViewProps> = ({ result, onBack, appMode, step, progressMsg }) => {
   const [copied, setCopied] = React.useState(false);
+
+  // Preprocess chemistry content to wrap raw LaTeX commands in $ delimiters
+  const preprocessChemistry = (text: string): string => {
+    let processed = text;
+
+    // Wrap standalone \xrightarrow{...} (not already inside $...$) in $ delimiters
+    processed = processed.replace(/(?<![\$])\\xrightarrow\{([^}]*)\}(?![\$])/g, ' $$\\xrightarrow{$1}$$ ');
+
+    // Wrap standalone \rightarrow not already in $ delimiters
+    processed = processed.replace(/(?<![\$])\\rightarrow(?![\$])/g, ' $$\\rightarrow$$ ');
+
+    // Wrap standalone \leftarrow not already in $ delimiters
+    processed = processed.replace(/(?<![\$])\\leftarrow(?![\$])/g, ' $$\\leftarrow$$ ');
+
+    // Wrap \Delta, \degree etc. not already in $ delimiters
+    processed = processed.replace(/(?<![\$])\\(Delta|degree|alpha|beta|gamma|uparrow|downarrow)(?![\$])/g, ' $$\\$1$$ ');
+
+    // Convert common arrow notations: → to proper arrow
+    processed = processed.replace(/→/g, '$$\\rightarrow$$');
+
+    return processed;
+  };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(result);
@@ -108,6 +133,8 @@ const ResultView: React.FC<ResultViewProps> = ({ result, onBack, appMode, step, 
         {/* Content */}
         <div className="bg-white p-8 md:p-12 min-h-[600px]">
           <ReactMarkdown
+            remarkPlugins={[remarkMath]}
+            rehypePlugins={[rehypeKatex]}
             components={{
               h1: ({ node, ...props }) => <h1 className="text-2xl md:text-3xl font-bold text-teal-700 uppercase text-center mb-6 mt-4 leading-relaxed" {...props} />,
               h2: ({ node, ...props }) => <h2 className="text-xl font-bold text-slate-800 uppercase mt-8 mb-4 border-b-2 border-teal-200 pb-2" {...props} />,
@@ -136,7 +163,7 @@ const ResultView: React.FC<ResultViewProps> = ({ result, onBack, appMode, step, 
               strong: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
             }}
           >
-            {result}
+            {preprocessChemistry(result)}
           </ReactMarkdown>
         </div>
       </div>

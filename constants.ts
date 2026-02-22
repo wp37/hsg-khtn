@@ -1,8 +1,9 @@
 // Constants for HSG KHTN Hóa Học AI
 import { SolverFormData, ExamFormData, ChemistryTopic, DifficultyLevel, ExamGrade } from './types';
 
-// System API Key (leave empty to require user input)
-export const SYSTEM_API_KEY = '';
+// System API Key - reads from env or leave empty to require user input
+// @ts-ignore - Vite env
+export const SYSTEM_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) || '';
 
 // Available AI Models
 export const CHEMISTRY_MODELS = [
@@ -309,19 +310,4 @@ export const BOOK_SETS = [
    'Sách giáo khoa cũ (trước 2018)',
 ];
 
-// Quick Suggestions (for compatibility)
-export const SKKN_SUGGESTIONS = SOLVER_SUGGESTIONS;
 
-// ============================================
-// COMPATIBILITY EXPORTS (keep template working)
-// ============================================
-
-export const OUTLINE_PROMPT = (formData: any) => SOLVE_PROMPT(formData.title || formData.problem || '', formData.subject || 'Hóa học', formData.grade || '9');
-export const PART_1_PROMPT = (outline: string) => `Tiếp tục giải chi tiết phần tiếp theo:\n\n${outline}`;
-export const PART_2_3_PROMPT = (outline: string, part1: string, specificLessons: string) => `Hoàn thành phần còn lại:\n\nDàn ý: ${outline}\n\nPhần 1: ${part1}\n\nBổ sung: ${specificLessons}`;
-export const EVALUATION_PROMPT = GRADING_PROMPT;
-export const PLAGIARISM_CHECK_PROMPT = TOPIC_ANALYSIS_PROMPT;
-export const SKKN_MODELS = CHEMISTRY_MODELS;
-
-// Title Analysis (compatibility)
-export const TITLE_ANALYSIS_PROMPT = (title: string, subject: string, gradeLevel: string, awardGoal: string) => `Phân tích đề tài: "${title}" - Môn: ${subject} - Lớp: ${gradeLevel} - Mục tiêu: ${awardGoal}`;
