@@ -95,7 +95,7 @@ const App: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [settings, setSettings] = useState<SettingsType>({
-    model: 'gemini-2.5-flash-preview-09-2025',
+    model: 'gemini-2.5-flash-preview-05-20',
     apiKey: SYSTEM_API_KEY || '',
     customModel: ''
   });
@@ -421,8 +421,8 @@ const App: React.FC = () => {
           <button
             onClick={() => handleModeChange('solver')}
             className={`flex-1 py-3 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${appMode === 'solver'
-                ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-teal-500/30'
-                : 'text-gray-400 hover:text-white'
+              ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-teal-500/30'
+              : 'text-gray-400 hover:text-white'
               }`}
           >
             <Beaker size={16} />
@@ -432,8 +432,8 @@ const App: React.FC = () => {
           <button
             onClick={() => handleModeChange('exam_creator')}
             className={`flex-1 py-3 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${appMode === 'exam_creator'
-                ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-violet-500/30'
-                : 'text-gray-400 hover:text-white'
+              ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-violet-500/30'
+              : 'text-gray-400 hover:text-white'
               }`}
           >
             <GraduationCap size={16} />
@@ -443,8 +443,8 @@ const App: React.FC = () => {
           <button
             onClick={() => handleModeChange('grader')}
             className={`flex-1 py-3 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${appMode === 'grader'
-                ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/30'
-                : 'text-gray-400 hover:text-white'
+              ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/30'
+              : 'text-gray-400 hover:text-white'
               }`}
           >
             <ClipboardCheck size={16} />
@@ -730,8 +730,8 @@ const App: React.FC = () => {
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-300 mb-3">Chọn Model AI</label>
               <div className="grid grid-cols-1 gap-3">
-                <button onClick={() => setSettings(prev => ({ ...prev, model: 'gemini-2.5-flash-preview-09-2025' }))}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${settings.model === 'gemini-2.5-flash-preview-09-2025' ? 'border-teal-500 bg-teal-500/10' : 'border-gray-700 hover:border-gray-500 bg-[#0a0f1e]'}`}>
+                <button onClick={() => setSettings(prev => ({ ...prev, model: 'gemini-2.5-flash-preview-05-20' }))}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${settings.model === 'gemini-2.5-flash-preview-05-20' ? 'border-teal-500 bg-teal-500/10' : 'border-gray-700 hover:border-gray-500 bg-[#0a0f1e]'}`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
@@ -741,7 +741,7 @@ const App: React.FC = () => {
                       </div>
                       <p className="text-gray-500 text-sm mt-1">Gemini 2.5 Flash • Nhanh, chính xác</p>
                     </div>
-                    {settings.model === 'gemini-2.5-flash-preview-09-2025' && <Check size={20} className="text-teal-400" />}
+                    {settings.model === 'gemini-2.5-flash-preview-05-20' && <Check size={20} className="text-teal-400" />}
                   </div>
                 </button>
 
