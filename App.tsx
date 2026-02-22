@@ -219,12 +219,23 @@ const App: React.FC = () => {
   // === ERROR HANDLER ===
   const handleError = (err: any) => {
     setStep(GenerationStep.ERROR);
-    let finalErrorMsg = err.message || "Có lỗi xảy ra.";
-    const activeKey = settings.apiKey || SYSTEM_API_KEY;
-    if (SYSTEM_API_KEY && activeKey === SYSTEM_API_KEY) {
-      finalErrorMsg = `⚠️ Key hệ thống gặp sự cố. Vui lòng nhập API KEY CÁ NHÂN.\n(Chi tiết: ${err.message})`;
+    const msg = err.message || "Có lỗi xảy ra.";
+    const isInvalidKey = msg.includes('không hợp lệ') || msg.includes('INVALID_ARGUMENT');
+    const isQuotaExhausted = msg.includes('hết quota') || msg.includes('RESOURCE_EXHAUSTED');
+
+    if (isInvalidKey || isQuotaExhausted) {
+      // Clear bad key and show modal
+      localStorage.removeItem('gemini_api_key');
+      setSettings(prev => ({ ...prev, apiKey: '' }));
+      setCustomApiKey('');
+      setShowApiKeyModal(true);
+      setError(isInvalidKey
+        ? '🔑 API Key không hợp lệ hoặc đã hết hạn. Vui lòng nhập key mới.\n👉 Lấy key miễn phí tại: aistudio.google.com/apikey'
+        : '⚡ API Key đã hết lượt dùng (quota). Vui lòng tạo key mới hoặc chờ reset.\n👉 Lấy key miễn phí tại: aistudio.google.com/apikey'
+      );
+    } else {
+      setError(`⚠️ ${msg}`);
     }
-    setError(finalErrorMsg);
   };
 
   // === PASTE IMAGE HANDLER ===
