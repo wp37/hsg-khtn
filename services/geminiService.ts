@@ -78,6 +78,9 @@ Prompt: ${typeof promptOrParts === 'string' ? promptOrParts.substring(0, 100) : 
     if (error.message?.includes('INVALID_ARGUMENT')) {
       throw new Error('API Key không hợp lệ. Vui lòng kiểm tra lại.');
     }
+    if (error.message?.includes('PERMISSION_DENIED') || error.message?.includes('suspended')) {
+      throw new Error('API Key đã bị đình chỉ (suspended). Vui lòng tạo key mới.');
+    }
     if (error.message?.includes('NOT_FOUND')) {
       throw new Error(`Model "${modelId}" không tồn tại. Vui lòng chọn model khác.`);
     }
@@ -112,6 +115,9 @@ export const testConnection = async (apiKey: string, modelId: string): Promise<v
     }
     if (error.message?.includes('RESOURCE_EXHAUSTED')) {
       throw new Error('API Key đã hết quota.');
+    }
+    if (error.message?.includes('PERMISSION_DENIED') || error.message?.includes('suspended')) {
+      throw new Error('API Key đã bị đình chỉ. Vui lòng tạo key mới.');
     }
     if (error.message?.includes('NOT_FOUND')) {
       throw new Error(`Model "${modelId}" không tồn tại.`);

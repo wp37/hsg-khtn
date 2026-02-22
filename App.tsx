@@ -220,7 +220,7 @@ const App: React.FC = () => {
   const handleError = (err: any) => {
     setStep(GenerationStep.ERROR);
     const msg = err.message || "Có lỗi xảy ra.";
-    const isInvalidKey = msg.includes('không hợp lệ') || msg.includes('INVALID_ARGUMENT');
+    const isInvalidKey = msg.includes('không hợp lệ') || msg.includes('INVALID_ARGUMENT') || msg.includes('suspended') || msg.includes('đình chỉ') || msg.includes('PERMISSION_DENIED');
     const isQuotaExhausted = msg.includes('hết quota') || msg.includes('RESOURCE_EXHAUSTED');
 
     if (isInvalidKey || isQuotaExhausted) {
