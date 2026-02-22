@@ -49,6 +49,11 @@ function classifyError(error: any): { type: ErrorType; message: string; retryabl
     return { type: 'QUOTA_EXHAUSTED', message: 'API Key đã hết lượt dùng miễn phí. Vui lòng chờ hoặc tạo key mới.', retryable: false };
   }
 
+  // 400 - Unsupported MIME type or bad content (NOT a key issue)
+  if (msg.includes('MIME type') || msg.includes('Unsupported') || msg.includes('mime')) {
+    return { type: 'UNKNOWN', message: 'Định dạng nội dung không được hỗ trợ. Vui lòng thử lại với ảnh PNG/JPG hoặc nhập text.', retryable: false };
+  }
+
   // 400 - Invalid argument / Bad key
   if (msg.includes('INVALID_ARGUMENT') || msg.includes('API key not valid') || status === 400) {
     return { type: 'INVALID_KEY', message: 'API Key không hợp lệ. Vui lòng kiểm tra lại.', retryable: false };

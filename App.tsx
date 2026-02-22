@@ -253,19 +253,27 @@ const App: React.FC = () => {
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if (item.type.startsWith('image/')) {
-        e.preventDefault();
+      if (item.type.startsWith('image/') || item.kind === 'file') {
         const file = item.getAsFile();
         if (!file) continue;
+        // Only process image files
+        if (!file.type && !item.type.startsWith('image/')) continue;
+        e.preventDefault();
         if (file.size > 10 * 1024 * 1024) { alert('Ảnh quá lớn (Max 10MB)'); return; }
 
         const reader = new FileReader();
         reader.onload = () => {
-          const result = reader.result as string;
-          const base64 = result.includes(',') ? result.split(',')[1] : result;
+          const dataUrl = reader.result as string;
+          // Extract MIME type from data URL: "data:image/png;base64,..."
+          const mimeMatch = dataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,/);
+          const mimeType = mimeMatch ? mimeMatch[1] : (file.type || item.type || 'image/png');
+          const base64 = dataUrl.includes(',') ? dataUrl.split(',')[1] : dataUrl;
+
+          if (!base64) return;
+
           setPastedImages(prev => [...prev, {
             data: base64,
-            mimeType: item.type,
+            mimeType: mimeType,
             id: `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
           }]);
         };
