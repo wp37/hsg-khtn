@@ -95,7 +95,7 @@ const App: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [settings, setSettings] = useState<SettingsType>({
-    model: 'gemini-2.5-flash-preview-05-20',
+    model: 'gemini-2.5-flash',
     apiKey: SYSTEM_API_KEY || '',
     customModel: ''
   });
@@ -730,8 +730,8 @@ const App: React.FC = () => {
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-300 mb-3">Chọn Model AI</label>
               <div className="grid grid-cols-1 gap-3">
-                <button onClick={() => setSettings(prev => ({ ...prev, model: 'gemini-2.5-flash-preview-05-20' }))}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${settings.model === 'gemini-2.5-flash-preview-05-20' ? 'border-teal-500 bg-teal-500/10' : 'border-gray-700 hover:border-gray-500 bg-[#0a0f1e]'}`}>
+                <button onClick={() => setSettings(prev => ({ ...prev, model: 'gemini-2.5-flash' }))}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${settings.model === 'gemini-2.5-flash' ? 'border-teal-500 bg-teal-500/10' : 'border-gray-700 hover:border-gray-500 bg-[#0a0f1e]'}`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
@@ -741,12 +741,12 @@ const App: React.FC = () => {
                       </div>
                       <p className="text-gray-500 text-sm mt-1">Gemini 2.5 Flash • Nhanh, chính xác</p>
                     </div>
-                    {settings.model === 'gemini-2.5-flash-preview-05-20' && <Check size={20} className="text-teal-400" />}
+                    {settings.model === 'gemini-2.5-flash' && <Check size={20} className="text-teal-400" />}
                   </div>
                 </button>
 
-                <button onClick={() => setSettings(prev => ({ ...prev, model: 'gemini-2.5-pro-preview-05-06' }))}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${settings.model === 'gemini-2.5-pro-preview-05-06' ? 'border-violet-500 bg-violet-500/10' : 'border-gray-700 hover:border-gray-500 bg-[#0a0f1e]'}`}>
+                <button onClick={() => setSettings(prev => ({ ...prev, model: 'gemini-2.5-pro' }))}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${settings.model === 'gemini-2.5-pro' ? 'border-violet-500 bg-violet-500/10' : 'border-gray-700 hover:border-gray-500 bg-[#0a0f1e]'}`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
@@ -756,7 +756,7 @@ const App: React.FC = () => {
                       </div>
                       <p className="text-gray-500 text-sm mt-1">Gemini 2.5 Pro • Phân tích sâu</p>
                     </div>
-                    {settings.model === 'gemini-2.5-pro-preview-05-06' && <Check size={20} className="text-violet-400" />}
+                    {settings.model === 'gemini-2.5-pro' && <Check size={20} className="text-violet-400" />}
                   </div>
                 </button>
               </div>

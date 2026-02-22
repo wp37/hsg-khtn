@@ -6,9 +6,9 @@ export const SYSTEM_API_KEY = '';
 
 // Available AI Models
 export const CHEMISTRY_MODELS = [
-   { id: 'gemini-2.5-flash-preview-05-20', name: 'Gemini 2.5 Flash', description: 'Nhanh, chính xác' },
+   { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Nhanh, chính xác' },
    { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Cân bằng tốc độ & chất lượng' },
-   { id: 'gemini-2.5-pro-preview-05-06', name: 'Gemini 2.5 Pro', description: 'Chất lượng cao nhất, phân tích sâu' },
+   { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', description: 'Chất lượng cao nhất, phân tích sâu' },
 ];
 
 // Chemistry Topics

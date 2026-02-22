@@ -28,7 +28,7 @@ export const getSelectedModelId = (settings: Settings): string => {
   if (settings.model === 'custom' && settings.customModel) {
     return settings.customModel;
   }
-  return settings.model || 'gemini-2.5-flash-preview-05-20';
+  return settings.model || 'gemini-2.5-flash';
 };
 
 /**
@@ -494,18 +494,18 @@ const generateMockSKKNAnalysis = (title: string, subject: string, gradeLevel: st
 // ============================================================================
 const MODEL_PIPELINES: Record<string, string[]> = {
   // FAST Mode: Speed priority - Good for quick analysis
-  'fast': ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-flash-latest'],
+  'fast': ['gemini-2.0-flash', 'gemini-2.5-flash'],
 
   // SMART Mode: Quality priority - Best for detailed analysis  
-  'smart': ['gemini-1.5-pro', 'gemini-2.0-flash-exp', 'gemini-1.5-flash'],
+  'smart': ['gemini-2.5-flash', 'gemini-2.0-flash'],
 
   // EXPERT Mode: Maximum quality - For final evaluation
-  'expert': ['gemini-1.5-pro-latest', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'],
+  'expert': ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash'],
 
   // Legacy support
-  'gemini-1.5-flash': ['gemini-1.5-flash', 'gemini-1.5-flash-latest'],
-  'gemini-1.5-pro': ['gemini-1.5-pro', 'gemini-1.5-pro-latest'],
-  'gemini-2.0-flash-exp': ['gemini-2.0-flash-exp', 'gemini-1.5-flash']
+  'gemini-2.5-flash': ['gemini-2.5-flash', 'gemini-2.0-flash'],
+  'gemini-2.5-pro': ['gemini-2.5-pro', 'gemini-2.5-flash'],
+  'gemini-2.0-flash': ['gemini-2.0-flash', 'gemini-2.5-flash']
 };
 
 // AI Configuration for different analysis types
