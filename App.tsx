@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Sparkles, Upload, FileText, X, Zap, PenTool, Phone, Award, BookOpen, Target, Lightbulb, History, Settings, Users, LogOut, Shield, Check, Trash2, Lock, ShieldCheck, AlertTriangle, Wrench, FlaskConical, GraduationCap, ClipboardCheck, Beaker, Atom, TestTubes } from 'lucide-react';
+import { Sparkles, Upload, FileText, X, Zap, PenTool, Phone, Award, BookOpen, Target, Lightbulb, History, Settings, Users, LogOut, Shield, Check, Trash2, Lock, ShieldCheck, AlertTriangle, Wrench, FlaskConical, GraduationCap, ClipboardCheck, Beaker, Atom, TestTubes, ImageIcon } from 'lucide-react';
 import { generateContent, getSelectedModelId } from './services/geminiService';
 import {
   SYSTEM_API_KEY,
@@ -47,6 +47,7 @@ const App: React.FC = () => {
   const [solverTopic, setSolverTopic] = useState<ChemistryTopic>('tong_hop');
   const [solverGrade, setSolverGrade] = useState<ExamGrade>('9');
   const [solverFile, setSolverFile] = useState<UploadedFile | null>(null);
+  const [pastedImages, setPastedImages] = useState<{ data: string; mimeType: string; id: string }[]>([]);
 
   // === EXAM CREATOR STATES ===
   const [examTopic, setExamTopic] = useState<ChemistryTopic>('tong_hop');
@@ -226,9 +227,41 @@ const App: React.FC = () => {
     setError(finalErrorMsg);
   };
 
+  // === PASTE IMAGE HANDLER ===
+  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (!file) continue;
+        if (file.size > 10 * 1024 * 1024) { alert('Ảnh quá lớn (Max 10MB)'); return; }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          const base64 = result.includes(',') ? result.split(',')[1] : result;
+          setPastedImages(prev => [...prev, {
+            data: base64,
+            mimeType: item.type,
+            id: `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+          }]);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  }, []);
+
+  const removePastedImage = (id: string) => {
+    setPastedImages(prev => prev.filter(img => img.id !== id));
+  };
+
   // === SOLVER LOGIC ===
   const handleSolve = useCallback(async () => {
-    if (!problemInput.trim() && !solverFile) return;
+    if (!problemInput.trim() && !solverFile && pastedImages.length === 0) return;
     if (!canAccessFeature() && !settings.apiKey) { setShowRegisterModal(true); return; }
     const activeKey = settings.apiKey || SYSTEM_API_KEY;
     if (!activeKey) { setShowApiKeyModal(true); setError("Vui lòng nhập API Key."); return; }
@@ -253,8 +286,23 @@ const App: React.FC = () => {
         }
         const response = await generateContent(modelId, contentParts, activeKey, SYSTEM_INSTRUCTION);
         setResult(response);
+      } else if (pastedImages.length > 0) {
+        // Solve with pasted images (+ optional text)
+        setProgressMsg('📸 Đang phân tích hình ảnh đề bài...');
+        const contentParts: any[] = [];
+        // Add all pasted images
+        for (const img of pastedImages) {
+          contentParts.push({ inlineData: { mimeType: img.mimeType, data: img.data } });
+        }
+        // Add text prompt
+        const prompt = problemInput.trim()
+          ? SOLVE_PROMPT(problemInput, topicName, `Lớp ${solverGrade}`)
+          : `Hãy đọc đề bài Hóa Học trong ${pastedImages.length > 1 ? 'các hình ảnh' : 'hình ảnh'} trên và giải chi tiết từng câu.\n\nChủ đề: ${topicName}\nLớp: ${solverGrade}\n\nYêu cầu: Giải chi tiết, cân bằng phương trình, ghi đơn vị đầy đủ.`;
+        contentParts.push({ text: prompt });
+        const response = await generateContent(modelId, contentParts, activeKey, SYSTEM_INSTRUCTION);
+        setResult(response);
       } else {
-        // Solve from text
+        // Solve from text only
         setProgressMsg('🧪 Đang phân tích và giải bài tập...');
         const prompt = SOLVE_PROMPT(problemInput, topicName, `Lớp ${solverGrade}`);
         const response = await generateContent(modelId, prompt, activeKey, SYSTEM_INSTRUCTION);
@@ -266,7 +314,7 @@ const App: React.FC = () => {
     } catch (err: any) {
       handleError(err);
     }
-  }, [problemInput, solverFile, solverTopic, solverGrade, settings]);
+  }, [problemInput, solverFile, pastedImages, solverTopic, solverGrade, settings]);
 
   // === EXAM CREATOR LOGIC ===
   const handleCreateExam = useCallback(async () => {
@@ -502,14 +550,45 @@ const App: React.FC = () => {
 
             {/* Problem Input */}
             <div className="mb-5">
-              <label className="block text-sm font-medium text-gray-400 mb-2">Nhập đề bài</label>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Nhập đề bài
+                <span className="text-gray-600 font-normal ml-2">• Hỗ trợ dán ảnh (Ctrl+V)</span>
+              </label>
               <textarea
                 value={problemInput}
                 onChange={(e) => setProblemInput(e.target.value)}
+                onPaste={handlePaste}
                 rows={6}
-                placeholder="Ví dụ: Hòa tan 5,6g Fe vào 200ml dung dịch HCl 1M. Tính khối lượng muối thu được..."
+                placeholder="Nhập đề bài hoặc dán ảnh chụp đề (Ctrl+V)..."
                 className="w-full px-4 py-3 bg-[#0a0f1e] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-teal-500 focus:outline-none resize-none text-sm leading-relaxed"
               />
+
+              {/* Pasted Images Preview */}
+              {pastedImages.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
+                    <ImageIcon size={12} />
+                    {pastedImages.length} ảnh đã dán
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {pastedImages.map((img) => (
+                      <div key={img.id} className="relative group">
+                        <img
+                          src={`data:${img.mimeType};base64,${img.data}`}
+                          alt="Ảnh đề bài"
+                          className="w-28 h-28 object-cover rounded-lg border-2 border-gray-700 group-hover:border-teal-500 transition-colors"
+                        />
+                        <button
+                          onClick={() => removePastedImage(img.id)}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-400 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Quick Suggestions */}
@@ -557,7 +636,7 @@ const App: React.FC = () => {
             {/* Solve Button */}
             <button
               onClick={handleSolve}
-              disabled={isProcessing || (!problemInput.trim() && !solverFile)}
+              disabled={isProcessing || (!problemInput.trim() && !solverFile && pastedImages.length === 0)}
               className="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 disabled:from-gray-600 disabled:to-gray-700 rounded-xl text-white font-bold text-lg shadow-xl shadow-teal-500/30 hover:shadow-teal-500/50 transition-all disabled:shadow-none flex items-center justify-center gap-2"
             >
               {isProcessing ? (
