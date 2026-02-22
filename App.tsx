@@ -83,6 +83,7 @@ const App: React.FC = () => {
 
   // User Registration states
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [apiKeyStatus, setApiKeyStatus] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
   const [fullNameInput, setFullNameInput] = useState('');
   const [registerError, setRegisterError] = useState('');
@@ -862,147 +863,167 @@ const App: React.FC = () => {
 
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-300 mb-2">API Key</label>
-              <input type="password" value={customApiKey} onChange={(e) => setCustomApiKey(e.target.value)}
+              <input type="password" value={customApiKey} onChange={(e) => { setCustomApiKey(e.target.value); setApiKeyStatus(''); }}
                 placeholder="Nhập API Key của bạn..."
                 className="w-full px-4 py-3 bg-[#0a0f1e] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-teal-500 focus:outline-none" />
               <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 mt-2 text-sm text-red-400 hover:text-red-300 transition-colors">
+                className="inline-flex items-center gap-1 mt-2 text-sm text-teal-400 hover:text-teal-300 transition-colors">
                 <Sparkles size={14} />
-                Lấy API key miễn phí để sử dụng app →
+                Lấy API key miễn phí tại Google AI Studio →
               </a>
+              {apiKeyStatus && (
+                <p className={`mt-2 text-sm ${apiKeyStatus.startsWith('✅') ? 'text-green-400' : apiKeyStatus.startsWith('⏳') ? 'text-yellow-400' : 'text-red-400'}`}>
+                  {apiKeyStatus}
+                </p>
+              )}
             </div>
 
             <div className="flex gap-3">
-              <button onClick={() => setShowApiKeyModal(false)}
+              <button onClick={() => { setShowApiKeyModal(false); setApiKeyStatus(''); }}
                 className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 rounded-xl text-white font-medium transition-colors">Hủy</button>
-              <button onClick={() => {
-                if (customApiKey.trim()) {
+              <button onClick={async () => {
+                if (!customApiKey.trim()) { setApiKeyStatus('❌ Vui lòng nhập API Key'); return; }
+                setApiKeyStatus('⏳ Đang kiểm tra key...');
+                try {
+                  const { testConnection } = await import('./services/geminiService');
+                  await testConnection(customApiKey.trim(), settings.model || 'gemini-2.5-flash');
                   setSettings(prev => ({ ...prev, apiKey: customApiKey.trim() }));
                   localStorage.setItem('gemini_api_key', customApiKey.trim());
+                  setApiKeyStatus('✅ Key hợp lệ! Đã lưu.');
+                  setError(null);
+                  setTimeout(() => { setShowApiKeyModal(false); setApiKeyStatus(''); }, 1000);
+                } catch (err: any) {
+                  setApiKeyStatus(`❌ ${err.message || 'Key không hợp lệ'}`);
                 }
-                setShowApiKeyModal(false);
               }}
                 className="flex-1 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 rounded-xl text-white font-bold transition-all">
-                Lưu
+                Lưu & Test
               </button>
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* =============== ADMIN LOGIN MODAL =============== */}
-      {showAdminLoginModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] rounded-2xl p-6 w-full max-w-md border border-gray-700">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2"><Shield size={24} className="text-teal-400" /> Admin Login</h3>
-              <button onClick={() => setShowAdminLoginModal(false)} className="text-gray-400 hover:text-white"><X size={24} /></button>
+      {
+        showAdminLoginModal && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#111827] rounded-2xl p-6 w-full max-w-md border border-gray-700">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2"><Shield size={24} className="text-teal-400" /> Admin Login</h3>
+                <button onClick={() => setShowAdminLoginModal(false)} className="text-gray-400 hover:text-white"><X size={24} /></button>
+              </div>
+              <input type="text" value={adminUsername} onChange={(e) => setAdminUsername(e.target.value)} placeholder="Username"
+                className="w-full px-4 py-3 bg-[#0a0f1e] border border-gray-700 rounded-xl text-white mb-3 focus:border-teal-500 focus:outline-none" />
+              <input type="password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} placeholder="Password"
+                onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
+                className="w-full px-4 py-3 bg-[#0a0f1e] border border-gray-700 rounded-xl text-white mb-3 focus:border-teal-500 focus:outline-none" />
+              {adminLoginError && <p className="text-red-400 text-sm mb-3">{adminLoginError}</p>}
+              <button onClick={handleAdminLogin}
+                className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl text-white font-bold">Đăng nhập</button>
             </div>
-            <input type="text" value={adminUsername} onChange={(e) => setAdminUsername(e.target.value)} placeholder="Username"
-              className="w-full px-4 py-3 bg-[#0a0f1e] border border-gray-700 rounded-xl text-white mb-3 focus:border-teal-500 focus:outline-none" />
-            <input type="password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} placeholder="Password"
-              onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
-              className="w-full px-4 py-3 bg-[#0a0f1e] border border-gray-700 rounded-xl text-white mb-3 focus:border-teal-500 focus:outline-none" />
-            {adminLoginError && <p className="text-red-400 text-sm mb-3">{adminLoginError}</p>}
-            <button onClick={handleAdminLogin}
-              className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl text-white font-bold">Đăng nhập</button>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* =============== ADMIN PANEL =============== */}
-      {showAdminPanel && adminLoggedIn && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] rounded-2xl p-6 w-full max-w-2xl border border-gray-700 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2"><Shield size={24} className="text-teal-400" /> Admin Panel</h3>
-              <button onClick={() => setShowAdminPanel(false)} className="text-gray-400 hover:text-white"><X size={24} /></button>
-            </div>
+      {
+        showAdminPanel && adminLoggedIn && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#111827] rounded-2xl p-6 w-full max-w-2xl border border-gray-700 max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2"><Shield size={24} className="text-teal-400" /> Admin Panel</h3>
+                <button onClick={() => setShowAdminPanel(false)} className="text-gray-400 hover:text-white"><X size={24} /></button>
+              </div>
 
-            <div className="mb-6">
-              <h4 className="text-lg font-bold text-yellow-400 mb-3">⏳ Chờ duyệt ({pendingRegistrations.length})</h4>
-              {pendingRegistrations.map((r, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-[#0a0f1e] rounded-lg mb-2">
-                  <div>
-                    <span className="text-white font-medium">{r.fullName || 'N/A'}</span>
-                    <span className="text-gray-400 text-sm ml-2">{r.phone}</span>
+              <div className="mb-6">
+                <h4 className="text-lg font-bold text-yellow-400 mb-3">⏳ Chờ duyệt ({pendingRegistrations.length})</h4>
+                {pendingRegistrations.map((r, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 bg-[#0a0f1e] rounded-lg mb-2">
+                    <div>
+                      <span className="text-white font-medium">{r.fullName || 'N/A'}</span>
+                      <span className="text-gray-400 text-sm ml-2">{r.phone}</span>
+                    </div>
+                    <button onClick={() => handleActivateUser(r.phone)}
+                      className="px-3 py-1 bg-green-500/20 text-green-400 rounded-lg text-sm hover:bg-green-500/30">Duyệt</button>
                   </div>
-                  <button onClick={() => handleActivateUser(r.phone)}
-                    className="px-3 py-1 bg-green-500/20 text-green-400 rounded-lg text-sm hover:bg-green-500/30">Duyệt</button>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            <div>
-              <h4 className="text-lg font-bold text-green-400 mb-3">✅ Đã kích hoạt ({activatedRegistrations.length})</h4>
-              {activatedRegistrations.map((r, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-[#0a0f1e] rounded-lg mb-2">
-                  <div>
-                    <span className="text-white font-medium">{r.fullName || 'N/A'}</span>
-                    <span className="text-gray-400 text-sm ml-2">{r.phone}</span>
+              <div>
+                <h4 className="text-lg font-bold text-green-400 mb-3">✅ Đã kích hoạt ({activatedRegistrations.length})</h4>
+                {activatedRegistrations.map((r, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 bg-[#0a0f1e] rounded-lg mb-2">
+                    <div>
+                      <span className="text-white font-medium">{r.fullName || 'N/A'}</span>
+                      <span className="text-gray-400 text-sm ml-2">{r.phone}</span>
+                    </div>
+                    <button onClick={() => handleDeactivateUser(r.phone)}
+                      className="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/30">Hủy</button>
                   </div>
-                  <button onClick={() => handleDeactivateUser(r.phone)}
-                    className="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/30">Hủy</button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* =============== REGISTER MODAL =============== */}
-      {showRegisterModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] rounded-2xl p-6 w-full max-w-md border border-teal-500/30">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <Sparkles size={24} className="text-teal-400" /> Đăng ký sử dụng
-              </h3>
-              <button onClick={() => setShowRegisterModal(false)} className="text-gray-400 hover:text-white"><X size={24} /></button>
-            </div>
-
-            {registerSuccess ? (
-              <div className="text-center py-6">
-                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Check size={32} className="text-green-400" />
-                </div>
-                <h4 className="text-lg font-bold text-green-400 mb-2">Đăng ký thành công!</h4>
-                <p className="text-gray-400 text-sm">Vui lòng chờ Admin duyệt tài khoản của bạn.</p>
+      {
+        showRegisterModal && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+            <div className="bg-[#111827] rounded-2xl p-6 w-full max-w-md border border-teal-500/30">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Sparkles size={24} className="text-teal-400" /> Đăng ký sử dụng
+                </h3>
+                <button onClick={() => setShowRegisterModal(false)} className="text-gray-400 hover:text-white"><X size={24} /></button>
               </div>
-            ) : (
-              <>
-                <input type="text" value={fullNameInput} onChange={(e) => setFullNameInput(e.target.value)} placeholder="Họ và tên"
-                  className="w-full px-4 py-3 bg-[#0a0f1e] border border-gray-700 rounded-xl text-white mb-3 focus:border-teal-500 focus:outline-none" />
-                <input type="tel" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} placeholder="Số điện thoại"
-                  className="w-full px-4 py-3 bg-[#0a0f1e] border border-gray-700 rounded-xl text-white mb-3 focus:border-teal-500 focus:outline-none" />
-                {registerError && <p className="text-red-400 text-sm mb-3">{registerError}</p>}
 
-                {BANK_INFO && (
-                  <div className="mb-4 p-4 bg-teal-500/5 border border-teal-500/20 rounded-xl">
-                    <p className="text-sm text-gray-300 mb-2 font-medium">💳 Thông tin thanh toán:</p>
-                    <p className="text-xs text-gray-400">Ngân hàng: {BANK_INFO.bankName}</p>
-                    <p className="text-xs text-gray-400">STK: {BANK_INFO.accountNumber}</p>
-                    <p className="text-xs text-gray-400">Chủ TK: {BANK_INFO.accountHolder}</p>
-                    <p className="text-xs text-teal-400 font-bold">Số tiền: {BANK_INFO.amount}</p>
-                    {BANK_INFO.qrUrl && <img src={BANK_INFO.qrUrl} alt="QR" className="mt-3 w-40 mx-auto rounded-lg" />}
+              {registerSuccess ? (
+                <div className="text-center py-6">
+                  <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Check size={32} className="text-green-400" />
                   </div>
-                )}
+                  <h4 className="text-lg font-bold text-green-400 mb-2">Đăng ký thành công!</h4>
+                  <p className="text-gray-400 text-sm">Vui lòng chờ Admin duyệt tài khoản của bạn.</p>
+                </div>
+              ) : (
+                <>
+                  <input type="text" value={fullNameInput} onChange={(e) => setFullNameInput(e.target.value)} placeholder="Họ và tên"
+                    className="w-full px-4 py-3 bg-[#0a0f1e] border border-gray-700 rounded-xl text-white mb-3 focus:border-teal-500 focus:outline-none" />
+                  <input type="tel" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} placeholder="Số điện thoại"
+                    className="w-full px-4 py-3 bg-[#0a0f1e] border border-gray-700 rounded-xl text-white mb-3 focus:border-teal-500 focus:outline-none" />
+                  {registerError && <p className="text-red-400 text-sm mb-3">{registerError}</p>}
 
-                <button onClick={handleRegisterUser} disabled={!phoneInput.trim() || !fullNameInput.trim()}
-                  className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl text-white font-bold disabled:opacity-50">
-                  Đăng ký
-                </button>
-              </>
-            )}
+                  {BANK_INFO && (
+                    <div className="mb-4 p-4 bg-teal-500/5 border border-teal-500/20 rounded-xl">
+                      <p className="text-sm text-gray-300 mb-2 font-medium">💳 Thông tin thanh toán:</p>
+                      <p className="text-xs text-gray-400">Ngân hàng: {BANK_INFO.bankName}</p>
+                      <p className="text-xs text-gray-400">STK: {BANK_INFO.accountNumber}</p>
+                      <p className="text-xs text-gray-400">Chủ TK: {BANK_INFO.accountHolder}</p>
+                      <p className="text-xs text-teal-400 font-bold">Số tiền: {BANK_INFO.amount}</p>
+                      {BANK_INFO.qrUrl && <img src={BANK_INFO.qrUrl} alt="QR" className="mt-3 w-40 mx-auto rounded-lg" />}
+                    </div>
+                  )}
+
+                  <button onClick={handleRegisterUser} disabled={!phoneInput.trim() || !fullNameInput.trim()}
+                    className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl text-white font-bold disabled:opacity-50">
+                    Đăng ký
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Footer */}
       <footer className="text-center py-6 text-gray-600 text-xs border-t border-gray-800/50">
         <p>🧪 HSG KHTN Hóa Học AI • Powered by Google Gemini</p>
       </footer>
-    </div>
+    </div >
   );
 };
 
