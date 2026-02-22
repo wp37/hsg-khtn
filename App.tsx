@@ -745,8 +745,8 @@ const App: React.FC = () => {
                   </div>
                 </button>
 
-                <button onClick={() => setSettings(prev => ({ ...prev, model: 'gemini-1.5-pro' }))}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${settings.model === 'gemini-1.5-pro' ? 'border-violet-500 bg-violet-500/10' : 'border-gray-700 hover:border-gray-500 bg-[#0a0f1e]'}`}>
+                <button onClick={() => setSettings(prev => ({ ...prev, model: 'gemini-2.5-pro-preview-05-06' }))}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${settings.model === 'gemini-2.5-pro-preview-05-06' ? 'border-violet-500 bg-violet-500/10' : 'border-gray-700 hover:border-gray-500 bg-[#0a0f1e]'}`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
@@ -754,9 +754,9 @@ const App: React.FC = () => {
                         <span className="font-bold text-white">Pro Mode</span>
                         <span className="text-xs px-2 py-0.5 bg-violet-500/20 text-violet-400 rounded">Chất lượng cao</span>
                       </div>
-                      <p className="text-gray-500 text-sm mt-1">Gemini 1.5 Pro • Phân tích sâu</p>
+                      <p className="text-gray-500 text-sm mt-1">Gemini 2.5 Pro • Phân tích sâu</p>
                     </div>
-                    {settings.model === 'gemini-1.5-pro' && <Check size={20} className="text-violet-400" />}
+                    {settings.model === 'gemini-2.5-pro-preview-05-06' && <Check size={20} className="text-violet-400" />}
                   </div>
                 </button>
               </div>
